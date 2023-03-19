@@ -1,9 +1,18 @@
 const express = require('express');
 require('dotenv').config();
-
-const connectDB = require('./db/connection');
-
 const app = express();
+
+// import created functions
+const connectDB = require('./db/connection');
+const authRouter = require("./routes/auth");
+
+
+// use express.json() to parse JSON bodies into JS objects
+app.use(express.json());
+
+//routes
+app.use("/api/v1/auth", authRouter);
+
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
