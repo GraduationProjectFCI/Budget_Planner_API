@@ -11,6 +11,19 @@ function containsCapital(str) {
   return res;
 }
 
+
+// log the current date year-month-day
+const today = new Date();
+
+
+
+
+
+
+
+
+
+
 //regester user
 const register = async (req, res) => {
   var errorlist = [];
@@ -115,7 +128,8 @@ const register = async (req, res) => {
         gender: req.body.gender,
         currency: req.body.currency,
         budget: req.body.budget,
-        birthdate: req.body.birthdate
+        birthdate: req.body.birthdate,
+        account_age : today.toDateString()
       });
 
       const token = user.createJWT();

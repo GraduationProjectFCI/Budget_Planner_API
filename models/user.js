@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
   budget: { type:Number },
   currency: { type:String },
   birthdate: { type:Date },
+  account_age: { type:Date },
 });
 
 UserSchema.pre("save", async function () {
