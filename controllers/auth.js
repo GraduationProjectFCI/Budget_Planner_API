@@ -196,7 +196,7 @@ const confirmation = async (req,res) => {
         
         //create token
         const user = await User.findOne({email})
-        console.log(user)
+        
         const token = user.createJWT();
         
         res.json({msg: "account activated",user: { name: user.name }, token})
