@@ -2,6 +2,11 @@ const send_mail = require("../mails/send_mails");
 const User = require("../models/user");
 const Code = require("../models/code");
 
+// use the mongoose object id
+var ObjectId = require('mongodb').ObjectId;
+
+
+
 //check for uppercase letters
 const isUpperCase = (string) => /^[A-Z]*$/.test(string);
 function containsCapital(str) {
@@ -111,31 +116,31 @@ const register = async (req, res) => {
     else {
         //generate a number randomly of 6 digits
     const RandomCode = Math.floor(100000 + Math.random() * 900000);
-
-
-    
     
     send_mail(RandomCode, req.body.email)
     
-      const newCode = await Code.create({
-        code: RandomCode,
-        email: req.body.email,
-        createdAt: today.toDateString()
-      });
+    
+    const user = await User.create({
+      name: req.body.name,
+      email: req.body.email,
+      password: req.body.password,
+      gender: req.body.gender,
+      currency: req.body.currency,
+      budget: req.body.budget,
+      birthdate: req.body.birthdate,
+      account_age : today.toDateString(),
+      active: false
+    });
+    const newCode = await Code.create({
+      code: RandomCode,
+      email: req.body.email,
+      user_id: user._id,
+      createdAt: today.toDateString()
+    });
 
-      const user = await User.create({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        gender: req.body.gender,
-        currency: req.body.currency,
-        budget: req.body.budget,
-        birthdate: req.body.birthdate,
-        account_age : today.toDateString(),
-        active: false
-      });
-
-        res.status(200).json({ msg : "user created successfully" });
+      //send user_id to the frontend
+      res.json({ msg: "user created", user_id: user._id });
+        
     }
   } catch (error) {
     res.json({ msg: error.message });
@@ -187,22 +192,24 @@ const login = async (req, res) => {
 };
 
 const confirmation = async (req,res) => {
-    const {code, email} = req.body;
+    const code = req.body.code;
 
-    const code_created = await Code.findOne({email: email})
+    //find the code by user_id
+    const code_created = await Code.findOne({user_id: req.body.user_id},{used: false})
 
     //check if the code is correct
     if(code_created.code == code){
         
         //create token
-        const user = await User.findOne({email})
+        const user = await User.findOne({_id: req.body.user_id})
         
         const token = user.createJWT();
         
         res.json({msg: "account activated",user: { name: user.name }, token})
 
         //update the user to be active
-        await User.findOneAndUpdate({email: email}, {active: true})
+        await User.findOneAndUpdate({_id: req.body.user_id}, {active: true})
+        await Code.findOneAndUpdate({user_id: req.body.user_id}, {used: true})
         
     }else{
         res.json({msg: "code is incorrect"})

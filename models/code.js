@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
  
 CodeSchema = new mongoose.Schema({
-    code: { type: Number },
     email: { type: String },
+    user_id: { type: mongoose.Types.ObjectId },
+    code: { type: Number },
     used: { type: Boolean , default: false},
     createdAt: { type: Date },
     
