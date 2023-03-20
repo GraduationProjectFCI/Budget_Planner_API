@@ -1,28 +1,19 @@
+const send_mail = require("../mails/send_mails");
 const User = require("../models/user");
+const Code = require("../models/code");
 
 //check for uppercase letters
 const isUpperCase = (string) => /^[A-Z]*$/.test(string);
 function containsCapital(str) {
-  var res = 0;
-  for (let i = 0; i < str.length; i++)
+    var res = 0;
+    for (let i = 0; i < str.length; i++)
     if (isUpperCase(str[i])) {
-      res++;
+        res++;
     }
-  return res;
+    return res;
 }
 
-
-// log the current date year-month-day
 const today = new Date();
-
-
-
-
-
-
-
-
-
 
 //regester user
 const register = async (req, res) => {
@@ -115,12 +106,23 @@ const register = async (req, res) => {
     }
 
 
-
-
-
     //check if there is no error
     if (errorlist.length) res.json({ msg: errorlist });
     else {
+        //generate a number randomly of 6 digits
+    const RandomCode = Math.floor(100000 + Math.random() * 900000);
+
+
+    
+    
+    send_mail(RandomCode, req.body.email)
+    
+      const newCode = await Code.create({
+        code: RandomCode,
+        email: req.body.email,
+        createdAt: today.toDateString()
+      });
+
       const user = await User.create({
         name: req.body.name,
         email: req.body.email,
@@ -129,11 +131,11 @@ const register = async (req, res) => {
         currency: req.body.currency,
         budget: req.body.budget,
         birthdate: req.body.birthdate,
-        account_age : today.toDateString()
+        account_age : today.toDateString(),
+        active: false
       });
 
-      const token = user.createJWT();
-      res.status(201).json({ user: { name: user.name }, token });
+        res.status(200).json({ msg : "user created successfully" });
     }
   } catch (error) {
     res.json({ msg: error.message });
@@ -184,4 +186,27 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const confirmation = async (req,res) => {
+    const {code, email} = req.body;
+
+    const code_created = await Code.findOne({email: email})
+
+    //check if the code is correct
+    if(code_created.code == code){
+        
+        //create token
+        const user = await User.findOne({email})
+        console.log(user)
+        const token = user.createJWT();
+        
+        res.json({msg: "account activated",user: { name: user.name }, token})
+
+        //update the user to be active
+        await User.findOneAndUpdate({email: email}, {active: true})
+        
+    }else{
+        res.json({msg: "code is incorrect"})
+    }
+};
+
+module.exports = { register, login, confirmation };
