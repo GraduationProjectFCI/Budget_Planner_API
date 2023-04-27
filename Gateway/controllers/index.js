@@ -23,4 +23,13 @@ const register = async (req, res) => {
   res.send(response.data);
 };
 
-module.exports = { login, register };
+const confirmation =async (req,res)=>{
+  const data={
+    user_id:req.body.user_id,
+    code:req.body.code
+  }
+  const response = await http.post("/confirmation",data )
+  res.send(response.data)
+}
+
+module.exports = { login, register,confirmation };
