@@ -106,14 +106,16 @@ const register = async (req, res) => {
     }
 
     //check if there is no error
-    if (errorlist.length) res.json({ msg: errorlist });
+    if (errorlist.length)
+      res.json({
+        status: 400,
+        msg: errorlist,
+      });
     else {
       //generate a number randomly of 6 digits
       const RandomCode = Math.floor(100000 + Math.random() * 900000);
 
       send_mail(RandomCode, req.body.email);
-
-      // check if user already register
 
       const user = await User.create({
         name: req.body.name,

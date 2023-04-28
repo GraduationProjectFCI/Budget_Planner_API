@@ -5,7 +5,7 @@ const login = async (req, res) => {
 
   const response = await http.post("/login", data);
 
-  res.send(response.data);
+  res.status(response.data.status).send(response.data);
 };
 
 const register = async (req, res) => {
@@ -20,16 +20,16 @@ const register = async (req, res) => {
   };
 
   const response = await http.post("/register", data);
-  res.send(response.data);
+  res.status(response.data.status).send(response.data);
 };
 
-const confirmation =async (req,res)=>{
-  const data={
-    user_id:req.body.user_id,
-    code:req.body.code
-  }
-  const response = await http.post("/confirmation",data )
-  res.send(response.data)
-}
+const confirmation = async (req, res) => {
+  const data = {
+    user_id: req.body.user_id,
+    code: req.body.code,
+  };
+  const response = await http.post("/confirmation", data);
+  res.status(response.data.status).send(response.data);
+};
 
-module.exports = { login, register,confirmation };
+module.exports = { login, register, confirmation };
