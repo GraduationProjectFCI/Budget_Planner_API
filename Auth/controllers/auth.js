@@ -3,19 +3,17 @@ const User = require("../models/user");
 const Code = require("../models/code");
 
 // use the mongoose object id
-var ObjectId = require('mongodb').ObjectId;
-
-
+var ObjectId = require("mongodb").ObjectId;
 
 //check for uppercase letters
 const isUpperCase = (string) => /^[A-Z]*$/.test(string);
 function containsCapital(str) {
-    var res = 0;
-    for (let i = 0; i < str.length; i++)
+  var res = 0;
+  for (let i = 0; i < str.length; i++)
     if (isUpperCase(str[i])) {
-        res++;
+      res++;
     }
-    return res;
+  return res;
 }
 
 const today = new Date();
@@ -42,22 +40,20 @@ const register = async (req, res) => {
       errorlist.push("must contain capital letter");
     }
 
-
     ////////NAME VALIDATION////////
     //validate name
-    if (!req.body.name.length) {
+    if (!req.body.name) {
       errorlist.push("name must be provided");
     }
 
     //check if name more than 3 characters
-    if (!req.body.name.length >= 3 && !req.body.name.length <= 50) {
+    if (!req.body.name >= 3 && !req.body.name <= 50) {
       errorlist.push("name must be between 3 and 50 characters");
     }
 
-
     ////////EMAIL VALIDATION////////
     //check if email found
-    if (!req.body.email.length) {
+    if (!req.body.email) {
       errorlist.push("email must be provided");
     }
 
@@ -67,83 +63,88 @@ const register = async (req, res) => {
     }
 
     ////////Genger Vlaidation////////
-    if(!req.body.gender.length){
-        errorlist.push("gender must be provided")
+    if (!req.body.gender) {
+      errorlist.push("gender must be provided");
     }
-
 
     ////////BUDGET VALIDATION////////
     //check if budget found
-    if(!req.body.budget.length){
-        errorlist.push("budget must be provided")
+    if (!req.body.budget) {
+      errorlist.push("budget must be provided");
     }
 
     //check if budget is a number
-    if(isNaN(req.body.budget)){
-        errorlist.push("budget must be a number")
+    if (isNaN(req.body.budget)) {
+      errorlist.push("budget must be a number");
     }
 
     //check if budget is a positive number
-    if(req.body.budget < 0){
-        errorlist.push("budget must be a positive number")
+    if (req.body.budget < 0) {
+      errorlist.push("budget must be a positive number");
     }
 
     ////////CURRENCY VALIDATION////////
     //check if currency found
-    if(!req.body.currency.length){
-        errorlist.push("currency must be provided")
+    if (!req.body.currency) {
+      errorlist.push("currency must be provided");
     }
 
     //check if currency is a string
-    if(!isNaN(req.body.currency)){
-        errorlist.push("currency must be a string")
+    if (!isNaN(req.body.currency)) {
+      errorlist.push("currency must be a string");
     }
 
     ////////BIRTHDATE VALIDATION////////
     //check if birthdate found
-    if(!req.body.birthdate.length){
-        errorlist.push("birthdate must be provided")
+    if (!req.body.birthdate) {
+      errorlist.push("birthdate must be provided");
     }
 
     //check if birthdate is a date
-    if(isNaN(Date.parse(req.body.birthdate))){
-        errorlist.push("birthdate must be a date")
+    if (isNaN(Date.parse(req.body.birthdate))) {
+      errorlist.push("birthdate must be a date");
     }
-
 
     //check if there is no error
     if (errorlist.length) res.json({ msg: errorlist });
     else {
-        //generate a number randomly of 6 digits
-    const RandomCode = Math.floor(100000 + Math.random() * 900000);
-    
-    send_mail(RandomCode, req.body.email)
-    
-    
-    const user = await User.create({
-      name: req.body.name,
-      email: req.body.email,
-      password: req.body.password,
-      gender: req.body.gender,
-      currency: req.body.currency,
-      budget: req.body.budget,
-      birthdate: req.body.birthdate,
-      account_age : today.toDateString(),
-      active: false
-    });
-    const newCode = await Code.create({
-      code: RandomCode,
-      email: req.body.email,
-      user_id: user._id,
-      createdAt: today.toDateString()
-    });
+      //generate a number randomly of 6 digits
+      const RandomCode = Math.floor(100000 + Math.random() * 900000);
+
+      send_mail(RandomCode, req.body.email);
+
+      // check if user already register
+
+      const user = await User.create({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+        gender: req.body.gender,
+        currency: req.body.currency,
+        budget: req.body.budget,
+        birthdate: req.body.birthdate,
+        account_age: today.toDateString(),
+        active: false,
+      });
+      const newCode = await Code.create({
+        code: RandomCode,
+        email: req.body.email,
+        user_id: user._id,
+        createdAt: today.toDateString(),
+      });
 
       //send user_id to the frontend
-      res.json({ msg: "user created", user_id: user._id });
-        
+      res.json({
+        status: 200,
+        msg: "user created",
+        user_id: user._id,
+      });
     }
   } catch (error) {
-    res.json({ msg: error.message });
+    res.json({
+      status: 500,
+      msg: error.message,
+    });
   }
 };
 
@@ -182,38 +183,72 @@ const login = async (req, res) => {
       } else {
         //if password is correct
         const token = user.createJWT(); //create token
-        res.status(200).json({ user: { name: user.name }, token });
+        res.json({
+          status: 200,
+          msg: "logged in successfully",
+          user: {
+            name: user.name,
+            id: user._id,
+          },
+          token,
+        });
       }
     }
   }
   if (errorlog.length) {
-    res.json({ msg: errorlog });
+    res.json({
+      status: 400,
+      msg: errorlog,
+    });
   }
 };
 
-const confirmation = async (req,res) => {
-    const code = req.body.code;
+const confirmation = async (req, res) => {
+  const errorlog = [];
 
-    //find the code by user_id
-    const code_created = await Code.findOne({user_id: req.body.user_id},{used: false})
+  const code = req.body.code;
 
-    //check if the code is correct
-    if(code_created.code == code){
-        
-        //create token
-        const user = await User.findOne({_id: req.body.user_id})
-        
-        const token = user.createJWT();
-        
-        res.json({msg: "account activated",user: { name: user.name }, token})
+  if (code) {
+    errorlog.push("code must be provided");
+  }
 
-        //update the user to be active
-        await User.findOneAndUpdate({_id: req.body.user_id}, {active: true})
-        await Code.findOneAndUpdate({user_id: req.body.user_id}, {used: true})
-        
-    }else{
-        res.json({msg: "code is incorrect"})
-    }
+  if (req.body.user_id) {
+    errorlog.push("user_id must be provided");
+  }
+
+  //find the code by user_id
+  const code_created = await Code.findOne(
+    { user_id: req.body.user_id },
+    { used: false }
+  );
+
+  //check if the code is correct
+  if (code_created.code == code) {
+    //create token
+    const user = await User.findOne({ _id: req.body.user_id });
+
+    const token = user.createJWT();
+
+    res.json({
+      status: 200,
+      msg: "account activated",
+      user: {
+        name: user.name,
+        id: user._id,
+      },
+      token,
+    });
+
+    //update the user to be active
+    await User.findOneAndUpdate({ _id: req.body.user_id }, { active: true });
+    await Code.findOneAndUpdate({ user_id: req.body.user_id }, { used: true });
+  } else {
+    res.json({
+      status: 400,
+      msg: "account not activated",
+      error: errorlog,
+    });
+  }
 };
 
 module.exports = { register, login, confirmation };
