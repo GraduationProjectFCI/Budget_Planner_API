@@ -10,3 +10,6 @@ services:
       - "4000:4000"
     depends_on:
       - auth
+
+  app:
+    image: moa2men/app

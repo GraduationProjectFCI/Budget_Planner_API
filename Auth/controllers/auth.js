@@ -1,6 +1,9 @@
 const send_mail = require("../mails/send_mails");
 const User = require("../models/user");
 const Code = require("../models/code");
+const UserData = require("../models/user_data_modal");
+
+const jwt = require("jsonwebtoken");
 
 // use the mongoose object id
 var ObjectId = require("mongodb").ObjectId;
@@ -242,7 +245,18 @@ const confirmation = async (req, res) => {
     });
 
     //update the user to be active
-    await User.findOneAndUpdate({ _id: req.body.user_id }, { active: true });
+    const response = await User.findOneAndUpdate(
+      { _id: req.body.user_id },
+      { active: true }
+    );
+
+    await UserData.create({
+      user_id: response._id,
+      total: response.budget,
+      spent: 0,
+      remaining: 0,
+    });
+
     await Code.findOneAndUpdate({ user_id: req.body.user_id }, { used: true });
   } else {
     res.json({
@@ -253,4 +267,36 @@ const confirmation = async (req, res) => {
   }
 };
 
-module.exports = { register, login, confirmation };
+const validate = (req, res) => {
+  //validate token in the req
+  const token = req.body.token;
+
+  if (!token) {
+    res.json({
+      status: 401,
+      msg: "unauthorized",
+    });
+  } else {
+    //verify the token
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        res.json({
+          status: 401,
+          msg: "unauthorized",
+        });
+      } else {
+        res.json({
+          status: 200,
+          msg: "authorized",
+        });
+      }
+    });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  confirmation,
+  validate,
+};

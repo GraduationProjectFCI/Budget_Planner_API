@@ -1,4 +1,4 @@
-const http = require("../connection/connect.js");
+const http = require("../connection/auth.js");
 
 const login = async (req, res) => {
   const data = { email: req.body.email, password: req.body.password };
@@ -32,4 +32,20 @@ const confirmation = async (req, res) => {
   res.status(response.data.status).send(response.data);
 };
 
-module.exports = { login, register, confirmation };
+const validate = async (req, res) => {
+  //get the token from req headers
+
+  if (!req.headers.authorization) {
+    res.status(401).json({ msg: "Unauthorized" });
+  } else {
+    const token = req.headers.authorization.split(" ")[1];
+    const response = await http.post("/validate", { token });
+    if (response.status === 200) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
+
+module.exports = { login, register, confirmation, validate };

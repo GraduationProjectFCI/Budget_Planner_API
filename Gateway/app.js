@@ -9,7 +9,8 @@ const cors = require("cors");
 app.use(cors("*"));
 
 // import created functions
-const { login, register, confirmation } = require("./controllers/index");
+const { login, register, confirmation } = require("./controllers");
+const { getUserData, updateUserData } = require("./controllers/app");
 
 app.get("/", (req, res) => {
   res.send("Hello World from the gateway");
@@ -17,12 +18,14 @@ app.get("/", (req, res) => {
 app.post("/login", login);
 app.post("/register", register);
 app.post("/confirmation", confirmation);
+app.get("/user-data/:user_id", getUserData);
+app.patch("/user-data/:user_id", updateUserData);
 
 const start = async () => {
   const port = 4000;
   try {
     app.listen(port, () => {
-      console.log(`Example app listening at http://localhost:${port}`);
+      console.log(`app listening on port :${port}`);
     });
   } catch (error) {
     console.log(error);
