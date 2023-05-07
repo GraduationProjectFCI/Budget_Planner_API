@@ -8,8 +8,9 @@ const validate = async (req, res) => {
     res.status(401).json({ msg: "Unauthorized" });
   } else {
     const token = req.headers.authorization.split(" ")[1];
+
     const response = await authHttp.post("/validate", { token });
-    if (response.status === 200) {
+    if (response.data.status === 200) {
       return true;
     } else {
       return false;
@@ -20,7 +21,10 @@ const validate = async (req, res) => {
 const getUserData = async (req, res) => {
   if (await validate(req, res)) {
     const response = await appHttp.get(`user-data/${req.params.user_id}`);
-    res.status(response.data.status).send(response.data);
+    res.status(response.data.status).json({
+      msg: response.msg,
+      data: response.data,
+    });
   } else {
     res.status(401).json({ msg: "Unauthorized" });
   }

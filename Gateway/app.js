@@ -24,7 +24,7 @@ app.patch("/user-data/:user_id", updateUserData);
 const start = async () => {
   const port = 4000;
   try {
-    app.listen(port, () => {
+    app.listen(port, "0.0.0.0", () => {
       console.log(`app listening on port :${port}`);
     });
   } catch (error) {

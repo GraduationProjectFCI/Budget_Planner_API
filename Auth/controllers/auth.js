@@ -274,7 +274,7 @@ const validate = (req, res) => {
   if (!token) {
     res.json({
       status: 401,
-      msg: "unauthorized",
+      msg: "unauthorized not found",
     });
   } else {
     //verify the token
@@ -285,6 +285,8 @@ const validate = (req, res) => {
           msg: "unauthorized",
         });
       } else {
+        //if the user is active and has the right to access the resource
+        //then return the resource
         res.json({
           status: 200,
           msg: "authorized",
