@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
 
-const UserDataScheme = new mongoose.Schema({
+const StatesScheme = new mongoose.Schema({
   user_id: mongoose.Types.ObjectId,
-  spent: Number,
-  remaining: Number,
-  total: Number,
+  label_name: String,
+  value: Number,
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model("UserData", UserDataScheme);
+module.exports = mongoose.model("statistics", StatesScheme);
