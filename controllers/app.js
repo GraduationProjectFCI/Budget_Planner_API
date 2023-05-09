@@ -6,10 +6,10 @@ const Deadlines = require("../models/deadlineSchema");
 
 const jwt = require("jsonwebtoken");
 
-// ######## DEADLINES #########
+// ######## DEADLINES ##########
 const addDeadline = (req, res) => {
   const errorLog = [];
-  const { user_id, deadline_name, deadline_date, deadline_value } = req.body;
+  const { deadline_name, deadline_date, deadline_value } = req.body;
 
   // validate bearer token in the request headers
   const bearerHeader = req.headers["authorization"];
@@ -26,15 +26,8 @@ const addDeadline = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (!user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is required");
-        }
-
-        if (authData.userId !== user_id) {
-          errorLog.push("user_id is not valid");
-        }
-        if (authData.userId !== user_id) {
-          errorLog.push("user_id is not valid");
         }
 
         if (!deadline_name) {
@@ -54,7 +47,7 @@ const addDeadline = (req, res) => {
           });
         } else {
           const newDeadline = new Deadlines({
-            user_id,
+            user_id: authData.userId,
             deadline_name,
             deadline_date,
             deadline_value,
@@ -127,7 +120,6 @@ const getOneDeadLine = (req, res) => {
 
 const getDeadlines = (req, res) => {
   const errorLog = [];
-  const { user_id } = req.params;
 
   //validate bearer token
   const bearerHeader = req.headers["authorization"];
@@ -145,12 +137,8 @@ const getDeadlines = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is required");
-        }
-
-        if (authData.userId !== user_id) {
-          errorLog.push("user_id is not valid");
         }
 
         if (errorLog.length > 0) {
@@ -159,7 +147,7 @@ const getDeadlines = (req, res) => {
             errorLog,
           });
         } else {
-          Deadlines.find({ user_id })
+          Deadlines.find({ user_id: authData.userId })
             .then((data) => {
               res.status(200).json({
                 msg: "Deadline Fetched Successfully",
@@ -288,7 +276,6 @@ const deleteDeadline = (req, res) => {
 // ##### STATISTICS #########
 const getStatistics = (req, res) => {
   const errorLog = [];
-  const { user_id } = req.body;
 
   // validate bearer token
   const bearerHeader = req.headers["authorization"];
@@ -306,19 +293,17 @@ const getStatistics = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (!user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is required");
         }
-        if (authData.userId !== user_id) {
-          errorLog.push("user_id is not valid");
-        }
+
         if (errorLog.length > 0) {
           res.status(400).json({
             msg: "Bad Request",
             errorLog,
           });
         } else {
-          Statistics.find({ user_id })
+          Statistics.find({ user_id: authData.userId })
             .then((data) => {
               res.status(200).json({
                 msg: "Statistics Fetched Successfully",
@@ -338,9 +323,9 @@ const getStatistics = (req, res) => {
 
 const addStatistics = (req, res) => {
   const errorLog = [];
-  const { user_id, label_name, value } = req.body;
+  const { label_name, value } = req.body;
 
-  // validate bearer token
+  // validate bearer tokenn
   const bearerHeader = req.headers["authorization"];
   if (typeof bearerHeader === "undefined") {
     res.status(401).json({
@@ -356,12 +341,10 @@ const addStatistics = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (!user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is required");
         }
-        if (authData.userId !== user_id) {
-          errorLog.push("user_id is not valid");
-        }
+
         if (!label_name) {
           errorLog.push("label_name is required");
         }
@@ -376,7 +359,7 @@ const addStatistics = (req, res) => {
           });
         } else {
           const newStatistics = new Statistics({
-            user_id,
+            user_id: authData.userId,
             label_name,
             value,
           });
@@ -402,7 +385,7 @@ const addStatistics = (req, res) => {
 // ##### SHEETS #########
 const addSheets = (req, res) => {
   const errorLog = [];
-  const { user_id, sheet_type } = req.body;
+  const { sheet_type } = req.body;
 
   // validate bearer token
   const bearerHeader = req.headers["authorization"];
@@ -419,11 +402,7 @@ const addSheets = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (!user_id) {
-          errorLog.push("user_id is required");
-        }
-
-        if (authData.userId !== user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is not valid");
         }
 
@@ -438,7 +417,7 @@ const addSheets = (req, res) => {
           });
         } else {
           const newSheet = new Sheets({
-            user_id,
+            user_id: authData.userId,
             sheet_type,
           });
           newSheet
@@ -462,7 +441,6 @@ const addSheets = (req, res) => {
 
 const getSheets = (req, res) => {
   const errorLog = [];
-  const { user_id } = req.body;
 
   //validate bearer token
   const bearerHeader = req.headers["authorization"];
@@ -479,12 +457,8 @@ const getSheets = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (!user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is required");
-        }
-
-        if (authData.userId !== user_id) {
-          errorLog.push("user_id is not valid");
         }
 
         if (errorLog.length > 0) {
@@ -493,7 +467,7 @@ const getSheets = (req, res) => {
             errorLog,
           });
         } else {
-          Sheets.find({ user_id })
+          Sheets.find({ user_id: authData.userId })
             .then((data) => {
               res.status(200).json({
                 msg: "Sheets Fetched Successfully",
@@ -615,7 +589,7 @@ const updateSheet = async (req, res) => {
 // ########## LABELS ###########
 const addLabels = (req, res) => {
   const errorLog = [];
-  const { user_id, label } = req.body;
+  const { label } = req.body;
 
   //validate bearer token
   const bearerHeader = req.headers["authorization"];
@@ -632,16 +606,9 @@ const addLabels = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (!user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is required");
         }
-
-        if (authData.userId !== user_id) {
-          console.log(authData);
-          console.log(user_id);
-          errorLog.push("user_id is not valid");
-        }
-
         if (!label) {
           errorLog.push("label is required");
         }
@@ -653,7 +620,7 @@ const addLabels = (req, res) => {
           });
         } else {
           const newLabel = new Labels({
-            user_id,
+            user_id: authData.userId,
             label,
           });
           newLabel
@@ -677,7 +644,6 @@ const addLabels = (req, res) => {
 
 const getLabels = (req, res) => {
   const errorLog = [];
-  const { user_id } = req.body;
 
   //validate bearer token
   const bearerHeader = req.headers["authorization"];
@@ -694,20 +660,16 @@ const getLabels = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (!user_id) {
+        if (!authData.userId) {
           errorLog.push("user_id is required");
         }
-        if (authData.userId === user_id) {
-          errorLog.push("user_id is not valid");
-        }
-
         if (errorLog.length > 0) {
           res.status(400).json({
             msg: "Bad Request",
             errorLog,
           });
         } else {
-          Labels.find({ user_id })
+          Labels.find({ user_id: authData.userId })
             .then((data) => {
               res.status(200).json({
                 msg: "Labels Fetched Successfully",
@@ -777,7 +739,6 @@ const update_user_data = async (req, res) => {
   const errorLog = [];
 
   const { spent, total } = req.body;
-  const { user_id } = req.params;
 
   //validate bearer token
   const bearerHeader = req.headers["authorization"];
@@ -794,20 +755,15 @@ const update_user_data = async (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (authData.userId === user_id) {
-          errorLog.push("user_id is not valid");
+        if (!authData.userId) {
+          errorLog.push("user_id is required");
         }
-
         if (!spent) {
           errorLog.push("spent is required");
         }
 
         if (!total) {
           errorLog.push("total is required");
-        }
-
-        if (!user_id) {
-          errorLog.push("user_id is required");
         }
 
         if (errorLog.length > 0) {
@@ -817,7 +773,7 @@ const update_user_data = async (req, res) => {
           });
         } else {
           const response = await UserData.findOneAndUpdate(
-            { user_id },
+            { user_id: authData.userId },
             {
               spent,
               remaining: total - spent,
@@ -844,8 +800,6 @@ const update_user_data = async (req, res) => {
 const get_user_data = (req, res) => {
   const errorLog = [];
 
-  const { user_id } = req.params;
-
   //validate bearer token
   const bearerHeader = req.headers["authorization"];
   if (typeof bearerHeader === "undefined") {
@@ -861,21 +815,16 @@ const get_user_data = (req, res) => {
           msg: "Forbidden",
         });
       } else {
-        if (authData.userId === user_id) {
-          errorLog.push("user_id is not valid");
+        if (!authData.userId) {
+          errorLog.push("user_id is required");
         }
-
-        if (!user_id) {
-          errorLog.push("id is required");
-        }
-
         if (errorLog.length > 0) {
           res.status(400).json({
             msg: "Bad Request",
             errorLog,
           });
         } else {
-          UserData.find({ user_id: user_id })
+          UserData.find({ user_id: authData.userId })
             .then((data) => {
               res.status(200).json({
                 msg: "User Data Fetched Successfully",

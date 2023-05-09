@@ -21,20 +21,20 @@ const {
 } = require("../controllers/app");
 
 //added to the gateway service
-router.route("/user-data/:user_id").patch(update_user_data).get(get_user_data);
+router.route("/user-data").patch(update_user_data).get(get_user_data);
 
 //not added
 router.route("/labels").post(addLabels).get(getLabels);
 router.route("/labels/:label_id").delete(deleteLabels);
+
 router.route("/sheets").get(getSheets).post(addSheets);
 router.route("/sheets/:sheet_id").delete(deleteSheets).patch(updateSheet);
 
 router.route("/statistics").get(getStatistics).post(addStatistics);
 
-router.route("/deadlines").post(addDeadline);
-router.route("/deadlines/:user_id").get(getDeadlines);
+router.route("/deadlines").post(addDeadline).get(getDeadlines);
 router
-  .route("/deadline/:deadline_id")
+  .route("/deadlines/:deadline_id")
   .delete(deleteDeadline)
   .patch(updateDeadline)
   .get(getOneDeadLine);
